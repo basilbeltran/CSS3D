@@ -1,0 +1,123 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multiverse Viewer</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #111;
+      color: #eee;
+      margin: 0;
+      overflow: hidden;
+    }
+    .itemDiv {
+      width: 120px;
+      height: 160px;
+      box-shadow: 0 0 12px #0ff;
+      border: 1px solid #0ff;
+      text-align: center;
+      cursor: pointer;
+    }
+    .itemRight {
+      font-size: 12px;
+      color: #aaa;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+    .itemCenter {
+      font-size: 36px;
+      color: #fff;
+      margin-top: 30px;
+    }
+    .itemBottom {
+      font-size: 10px;
+      color: #0ff;
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <script type="module">
+    import * as THREE from 'https://cdn.skypack.dev/three@0.152.2';
+    import { CSS3DRenderer, CSS3DObject } from 'https://cdn.skypack.dev/three/examples/jsm/renderers/CSS3DRenderer.js';
+    import { TrackballControls } from 'https://cdn.skypack.dev/three/examples/jsm/controls/TrackballControls.js';
+
+    let camera, scene, renderer, controls;
+
+    init();
+
+    async function init() {
+      camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 10000);
+      camera.position.z = 3000;
+
+      scene = new THREE.Scene();
+      renderer = new CSS3DRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      const response = await fetch('items.json').catch(() => null);
+      let items = response ? await response.json() : [
+        { itemNumber: "1", itemSymbol: "H", itemDetails: "Hydrogen" },
+        { itemNumber: "2", itemSymbol: "He", itemDetails: "Helium" },
+        { itemNumber: "3", itemSymbol: "Li", itemDetails: "Lithium" },
+        { itemNumber: "4", itemSymbol: "Be", itemDetails: "Beryllium" },
+        { itemNumber: "5", itemSymbol: "B", itemDetails: "Boron" },
+        { itemNumber: "6", itemSymbol: "C", itemDetails: "Carbon" },
+        { itemNumber: "7", itemSymbol: "N", itemDetails: "Nitrogen" },
+        { itemNumber: "8", itemSymbol: "O", itemDetails: "Oxygen" },
+        { itemNumber: "9", itemSymbol: "F", itemDetails: "Fluorine" },
+        { itemNumber: "10", itemSymbol: "Ne", itemDetails: "Neon" }
+      ];
+
+      createItemsFromJSON(items);
+
+      controls = new TrackballControls(camera, renderer.domElement);
+      controls.minDistance = 500;
+      controls.maxDistance = 6000;
+
+      animate();
+    }
+
+    function createItemsFromJSON(items) {
+      items.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'itemDiv';
+
+        const itemRight = document.createElement('div');
+        itemRight.className = 'itemRight';
+        itemRight.textContent = item.itemNumber;
+        itemDiv.appendChild(itemRight);
+
+        const itemCenter = document.createElement('div');
+        itemCenter.className = 'itemCenter';
+        itemCenter.textContent = item.itemSymbol;
+        itemDiv.appendChild(itemCenter);
+
+        const itemBottom = document.createElement('div');
+        itemBottom.className = 'itemBottom';
+        itemBottom.textContent = item.itemDetails;
+        itemDiv.appendChild(itemBottom);
+
+        const objectCSS = new CSS3DObject(itemDiv);
+        objectCSS.position.x = (index % 5) * 250 - 500;
+        objectCSS.position.y = -(Math.floor(index / 5) % 5) * 300 + 500;
+        objectCSS.position.z = 0;
+        scene.add(objectCSS);
+      });
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+  </script>
+</body>
+</html>
